@@ -13,7 +13,6 @@
 		C82E79761F0A4122008CD7D8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C82E79741F0A4122008CD7D8 /* Main.storyboard */; };
 		C82E79781F0A4122008CD7D8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C82E79771F0A4122008CD7D8 /* Assets.xcassets */; };
 		C82E797B1F0A4122008CD7D8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C82E79791F0A4122008CD7D8 /* LaunchScreen.storyboard */; };
-		C82E79911F0A4CB5008CD7D8 /* lufei.zip in Resources */ = {isa = PBXBuildFile; fileRef = C82E79901F0A4CB5008CD7D8 /* lufei.zip */; };
 		C82E79AE1F0B87C0008CD7D8 /* MobileCross.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C82E79871F0A4159008CD7D8 /* MobileCross.framework */; };
 		C82E79AF1F0B87C0008CD7D8 /* MobileCross.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C82E79871F0A4159008CD7D8 /* MobileCross.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -61,7 +60,6 @@
 		C82E797A1F0A4122008CD7D8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C82E797C1F0A4122008CD7D8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C82E79821F0A4159008CD7D8 /* MobileCross.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MobileCross.xcodeproj; path = ../ios/MobileCross.xcodeproj; sourceTree = "<group>"; };
-		C82E79901F0A4CB5008CD7D8 /* lufei.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = lufei.zip; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,7 +94,6 @@
 		C82E796A1F0A4122008CD7D8 /* MCDemo */ = {
 			isa = PBXGroup;
 			children = (
-				C82E79901F0A4CB5008CD7D8 /* lufei.zip */,
 				C82E796E1F0A4122008CD7D8 /* AppDelegate.h */,
 				C82E796F1F0A4122008CD7D8 /* AppDelegate.m */,
 				C82E79711F0A4122008CD7D8 /* ViewController.h */,
@@ -206,7 +203,6 @@
 				C82E797B1F0A4122008CD7D8 /* LaunchScreen.storyboard in Resources */,
 				C82E79781F0A4122008CD7D8 /* Assets.xcassets in Resources */,
 				C82E79761F0A4122008CD7D8 /* Main.storyboard in Resources */,
-				C82E79911F0A4CB5008CD7D8 /* lufei.zip in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

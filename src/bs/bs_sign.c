@@ -88,7 +88,7 @@ static unsigned char PADDING[64] =
  
 #define II(a, b, c, d, x, s, ac) {(a) += I((b), (c), (d)) + (x) + (unsigned int)(ac); (a) = ROTATE_LEFT((a), (s));(a) += (b);}
 
-int bs_sign(char* buf, bs_sign_t sign){
+int bs_sign(const char* buf, bs_sign_t sign){
     md5_context_t       context;
     unsigned char       buff[BS_MD5_STRLEN/2];
     int                 j;
@@ -108,7 +108,7 @@ int bs_sign(char* buf, bs_sign_t sign){
     return BS_SUCCESS;
 }
 
-uint64_t bs_usign(char* buf){
+uint64_t bs_usign(const char* buf){
     bs_sign_t           sign;
     /*
     int                 i;

@@ -10,6 +10,8 @@
 #define	__MCREFERENCE_H_
 
 #include "bs.h"
+#include <iostream>
+#include <vector>
 
 namespace mc {
     class Reference{
@@ -57,6 +59,26 @@ namespace mc {
     protected:
         int     m_referencecount;
         bool    m_is_reference;
+    };
+    
+    class ReferenceCache{
+    public:
+        static ReferenceCache* shareInstance();
+        
+        static void destroyInstance();
+        
+        ~ReferenceCache();
+        
+        virtual Reference* get();
+        
+        // 必须是new出来的对象
+        inline void add(Reference* r){
+            m_cache.push_back(r);
+        }
+        
+    protected:
+        static ReferenceCache*  m_instance;
+        std::vector<Reference*>      m_cache;
     };
 }
 

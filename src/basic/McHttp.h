@@ -10,6 +10,7 @@
 #define	__Http_H_
 
 #include "bs.h"
+#include <iostream>
 #include <string>
 #include <vector>
 

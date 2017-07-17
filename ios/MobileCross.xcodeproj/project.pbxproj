@@ -199,6 +199,7 @@
 		C82E79AA1F0B8663008CD7D8 /* AsyncFrame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C82E79A01F0B8663008CD7D8 /* AsyncFrame.cpp */; };
 		C82E79AB1F0B8663008CD7D8 /* AsyncSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C82E79A11F0B8663008CD7D8 /* AsyncSocket.cpp */; };
 		C82E79AC1F0B8663008CD7D8 /* ListenSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C82E79A21F0B8663008CD7D8 /* ListenSocket.cpp */; };
+		C82E7A751F0F746D008CD7D8 /* McReference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C82E7A741F0F746D008CD7D8 /* McReference.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -396,6 +397,7 @@
 		C82E79A01F0B8663008CD7D8 /* AsyncFrame.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AsyncFrame.cpp; path = ../../src/model/async/AsyncFrame.cpp; sourceTree = "<group>"; };
 		C82E79A11F0B8663008CD7D8 /* AsyncSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AsyncSocket.cpp; path = ../../src/model/async/AsyncSocket.cpp; sourceTree = "<group>"; };
 		C82E79A21F0B8663008CD7D8 /* ListenSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ListenSocket.cpp; path = ../../src/model/async/ListenSocket.cpp; sourceTree = "<group>"; };
+		C82E7A741F0F746D008CD7D8 /* McReference.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = McReference.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -446,45 +448,45 @@
 			isa = PBXGroup;
 			children = (
 				C82E77F21F0A2F0B008CD7D8 /* bs_common.c */,
-				C82E77FE1F0A2F0B008CD7D8 /* bs_conf.c */,
-				C82E78001F0A2F0B008CD7D8 /* bs_cqueue.c */,
-				C82E77F61F0A2F0B008CD7D8 /* bs_data.c */,
-				C82E78031F0A2F0B008CD7D8 /* bs_hashmap.c */,
-				C82E78051F0A2F0B008CD7D8 /* bs_list.c */,
-				C82E78071F0A2F0C008CD7D8 /* bs_lock.c */,
-				C82E78091F0A2F0C008CD7D8 /* bs_log.c */,
-				C82E780B1F0A2F0C008CD7D8 /* bs_mmap.c */,
-				C82E77F51F0A2F0B008CD7D8 /* bs_object.c */,
-				C82E780D1F0A2F0C008CD7D8 /* bs_pack.c */,
-				C82E77FB1F0A2F0B008CD7D8 /* bs_pool.c */,
-				C82E780F1F0A2F0C008CD7D8 /* bs_sign.c */,
-				C82E77F31F0A2F0B008CD7D8 /* bs_socket.c */,
-				C82E77FC1F0A2F0B008CD7D8 /* bs_string.c */,
-				C82E78121F0A2F0C008CD7D8 /* bs_timer.c */,
-				C82E77EC1F0A2F0B008CD7D8 /* bs_url.c */,
-				C82E78151F0A2F0C008CD7D8 /* bs_vector.c */,
 				C82E77F11F0A2F0B008CD7D8 /* bs_common.h */,
+				C82E77FE1F0A2F0B008CD7D8 /* bs_conf.c */,
 				C82E77FF1F0A2F0B008CD7D8 /* bs_conf.h */,
+				C82E78001F0A2F0B008CD7D8 /* bs_cqueue.c */,
 				C82E78011F0A2F0B008CD7D8 /* bs_cqueue.h */,
+				C82E77F61F0A2F0B008CD7D8 /* bs_data.c */,
 				C82E77F71F0A2F0B008CD7D8 /* bs_data.h */,
 				C82E78021F0A2F0B008CD7D8 /* bs_def.h */,
 				C82E77EE1F0A2F0B008CD7D8 /* bs_error.h */,
+				C82E78031F0A2F0B008CD7D8 /* bs_hashmap.c */,
 				C82E78041F0A2F0B008CD7D8 /* bs_hashmap.h */,
+				C82E78051F0A2F0B008CD7D8 /* bs_list.c */,
 				C82E78061F0A2F0B008CD7D8 /* bs_list.h */,
+				C82E78071F0A2F0C008CD7D8 /* bs_lock.c */,
 				C82E78081F0A2F0C008CD7D8 /* bs_lock.h */,
+				C82E78091F0A2F0C008CD7D8 /* bs_log.c */,
 				C82E77EF1F0A2F0B008CD7D8 /* bs_log.h */,
 				C82E780A1F0A2F0C008CD7D8 /* bs_macros.h */,
+				C82E780B1F0A2F0C008CD7D8 /* bs_mmap.c */,
 				C82E780C1F0A2F0C008CD7D8 /* bs_mmap.h */,
+				C82E77F51F0A2F0B008CD7D8 /* bs_object.c */,
 				C82E77F41F0A2F0B008CD7D8 /* bs_object.h */,
+				C82E780D1F0A2F0C008CD7D8 /* bs_pack.c */,
 				C82E780E1F0A2F0C008CD7D8 /* bs_pack.h */,
+				C82E77FB1F0A2F0B008CD7D8 /* bs_pool.c */,
 				C82E77FA1F0A2F0B008CD7D8 /* bs_pool.h */,
+				C82E780F1F0A2F0C008CD7D8 /* bs_sign.c */,
 				C82E78101F0A2F0C008CD7D8 /* bs_sign.h */,
+				C82E77F31F0A2F0B008CD7D8 /* bs_socket.c */,
 				C82E77F91F0A2F0B008CD7D8 /* bs_socket.h */,
+				C82E77FC1F0A2F0B008CD7D8 /* bs_string.c */,
 				C82E77F81F0A2F0B008CD7D8 /* bs_string.h */,
 				C82E78111F0A2F0C008CD7D8 /* bs_struct.h */,
+				C82E78121F0A2F0C008CD7D8 /* bs_timer.c */,
 				C82E78131F0A2F0C008CD7D8 /* bs_timer.h */,
 				C82E78141F0A2F0C008CD7D8 /* bs_type.h */,
+				C82E77EC1F0A2F0B008CD7D8 /* bs_url.c */,
 				C82E77ED1F0A2F0B008CD7D8 /* bs_url.h */,
+				C82E78151F0A2F0C008CD7D8 /* bs_vector.c */,
 				C82E78161F0A2F0C008CD7D8 /* bs_vector.h */,
 				C82E77F01F0A2F0B008CD7D8 /* bs.h */,
 			);
@@ -507,6 +509,7 @@
 				C82E78721F0A2FBE008CD7D8 /* McFile.mm */,
 				C82E78501F0A2F99008CD7D8 /* McHttp.cpp */,
 				C82E784A1F0A2F99008CD7D8 /* McHttp.h */,
+				C82E7A741F0F746D008CD7D8 /* McReference.cpp */,
 				C82E78561F0A2F99008CD7D8 /* McReference.h */,
 				C82E78571F0A2F99008CD7D8 /* McTask.cpp */,
 				C82E784B1F0A2F99008CD7D8 /* McTask.h */,
@@ -915,6 +918,7 @@
 				C82E78F61F0A385D008CD7D8 /* zip_delete.c in Sources */,
 				C82E78F41F0A385D008CD7D8 /* zip_buffer.c in Sources */,
 				C82E79021F0A385D008CD7D8 /* zip_extra_field_api.c in Sources */,
+				C82E7A751F0F746D008CD7D8 /* McReference.cpp in Sources */,
 				C82E79201F0A385D008CD7D8 /* zip_io_util.c in Sources */,
 				C82E79481F0A385D008CD7D8 /* zip_source_zip_new.c in Sources */,
 				C82E791C1F0A385D008CD7D8 /* zip_get_file_comment.c in Sources */,

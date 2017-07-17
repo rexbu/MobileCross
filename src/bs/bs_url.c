@@ -135,7 +135,8 @@ http_res_t* http_perform(http_t* http){
     
     http_res_t* res = bs_new(http_res);
     sock = socket_tcp(BS_FALSE);
-    if(bs_sock_connect(sock, http->url.domain.mem, http->url.port) != BS_SUCCESS){
+    int err = bs_sock_connect(sock, http->url.domain.mem, http->url.port);
+    if(err != BS_SUCCESS){
         close(sock);
         bs_delete(http);
         res->response_code =  BS_CONNERR;

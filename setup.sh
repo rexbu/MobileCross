@@ -2,6 +2,8 @@
 action=$1
 path=$2
 
+echo "path:"$path
+
 if [ "$action" = "init" ];then
     git remote add bs git@github.com:rexbu/bs.git
     git remote add basic git@github.com:rexbu/basic.git

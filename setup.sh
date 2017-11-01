@@ -1,6 +1,6 @@
 #!/bin/bash
-action=$1
-path=$2
+action=$2
+path=$1
 
 if [ "$action" = "init" ];then
     git remote add $path/bs git@github.com:rexbu/bs.git

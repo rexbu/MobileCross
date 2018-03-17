@@ -84,6 +84,12 @@ http_res_t* http_download(http_t* http, const char* file, void* download, http_p
 http_res_t* http_upload(http_t* http, const char* path, void* upload, http_progress progressCallback);
 /// 上传二进制数据到服务器。return ==0:正确；>0:http错误码 <0:连接http失败
 http_res_t* http_post_data(http_t* http, uint8_t* data, void* upload, http_progress progressCallback);
+/// http request请求
+void http_send_request(int socket, http_res_t* http_res, http_t* http);
+/// http response接收
+void http_receive_response(int socket, http_res_t* http_res, http_t* http);
+/// http response header接收
+void http_receive_header(int socket, http_res_t *http_res, http_t* http);
 
 struct http_res_t{
     data_t      response;
@@ -96,8 +102,11 @@ struct http_res_t{
 void* http_res_init(void *p);
 void http_res_destroy(void *p);
 
-state_t connect_socket(int sock, http_t *http);
+state_t connect_socket(int *sock, http_t *http);
 state_t http_response_parse(http_res_t *res);
+state_t read_timeout(int socket, uint32_t wait_seconds);
+state_t write_timeout(int socket, uint32_t wait_seconds);
+state_t connect_timeout(int socket, uint32_t wait_seconds);
 #ifdef __cplusplus
 }
 #endif

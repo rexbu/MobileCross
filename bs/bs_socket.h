@@ -37,6 +37,8 @@ typedef struct bs_addr_t{
     
 int socket_udp(bool_t is_nonblock);
 int socket_tcp(bool_t is_nonblock);
+state_t bs_tcp_sock_connect(int *sock, const char* ip, int port, bool_t is_nonblock);
+//state_t bs_udp_sock_connect(int *sock, const char* ip, int port, bool_t is_nonblock);
 state_t socket_unblock(int sock);
 state_t socket_block(int sock);
 state_t bs_sock_keepalive(int sock);

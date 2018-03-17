@@ -62,9 +62,10 @@ public:
     const char* cookie();
     static void setTimeout(uint32_t timeout);
     static void showLog(bool show);
+    void display_http_log(const char *log);
     
     static uint32_t   http_timeout;             // 过期时间
-    static bool http_show_log;                 // 展示日志
+    static bool http_show_log;                  // 展示日志
 protected:
     void setOpt(void* curl, http_method_t method, const char* body, uint32_t length);
     map<string, string>    m_headers;

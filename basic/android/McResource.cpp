@@ -9,7 +9,7 @@
 #include <jni.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
-#include "McFile.h"
+#include "../McFile.h"
  
 extern JavaVM*  g_jvm;
 

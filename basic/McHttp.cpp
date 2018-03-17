@@ -143,17 +143,12 @@ void HttpSession::http(const char *url, const char *method, const char *body, ui
     http_set_body(h->http, body, length);
     h->http_callback = callback;
 
+    display_http_log(h->http->req.mem);
+    
     void **para = (void **) malloc(sizeof(void *) * 2);
     para[0] = h;
     para[1] = this;
     ((ThreadPool *) m_thread_pool)->add(thread_http, para);
-
-#if DEBUG
-    if (http_show_log) {
-        info_log("%s", h->http->req.mem);
-    }
-#else
-#endif
 }
 
 void HttpSession::download(const char *url, const char *path, HttpFileCallback *callback) {
@@ -168,6 +163,8 @@ void HttpSession::download(const char *url, const char *path, HttpFileCallback *
     http_add_newline(h->http);
     snprintf(h->path, sizeof(h->path), "%s", path);
     h->file_callback = callback;
+    
+    display_http_log(h->http->req.mem);
 
     pthread_t download_thread;
     pthread_create(&download_thread, NULL, thread_down, h);
@@ -187,13 +184,14 @@ void HttpSession::upload(const char *url, const char *path, vector<pair<string, 
     http_add_newline(h->http);
     snprintf(h->path, sizeof(h->path), "%s", path);
     h->file_callback = callback;
+    
+    display_http_log(h->http->req.mem);
 
     pthread_t upload_thread;
     pthread_create(&upload_thread, NULL, thread_up_file, h);
 }
 
-void
-HttpSession::upload(const char *url, uint8_t *data, int size, vector<pair<string, string> > auths,
+void HttpSession::upload(const char *url, uint8_t *data, int size, vector<pair<string, string> > auths,
                     HttpFileCallback *callback) {
     mc_http_data_t *h = bs_new(mc_http_data);
     h->http = http_create(url, "PUT");
@@ -208,11 +206,12 @@ HttpSession::upload(const char *url, uint8_t *data, int size, vector<pair<string
     mc_http_data_set(h, data, size);
     h->http->body_size = (uint32_t) size;
     h->file_callback = callback;
-
+    
+    display_http_log(h->http->req.mem);
+    
     void **para = (void **) malloc(sizeof(void *) * 2);
     para[0] = h;
     para[1] = this;
-
     pthread_t post_data_thread;
     pthread_create(&post_data_thread, NULL, thread_post_data, para);
 }
@@ -233,20 +232,14 @@ void HttpSession::postData(const char *url, uint8_t *data, int size, HttpFileCal
     mc_http_data_set(h, data, size);
     h->http->body_size = (uint32_t) size;
     h->file_callback = callback;
+    
+    display_http_log(h->http->req.mem);
 
     void **para = (void **) malloc(sizeof(void *) * 2);
     para[0] = h;
     para[1] = this;
-
     pthread_t post_data_thread;
     pthread_create(&post_data_thread, NULL, thread_post_data, para);
-
-#if DEBUG
-    if (http_show_log) {
-        info_log("%s", h->http->req.mem);
-    }
-#else
-#endif
 }
 
 void HttpSession::addHttpHeader(const char *key, const char *value) {
@@ -284,6 +277,15 @@ void HttpSession::clearCookie() {
     m_headers.erase(cookie);
 }
 
+void HttpSession::display_http_log(const char *log) {
+#if DEBUG
+    if (http_show_log) {
+        info_log("%s", log);
+    }
+#else
+#endif
+}
+
 #pragma --mark "http回调及线程"
 void *thread_http(void *para) {
     void **arg = (void **) para;
@@ -297,9 +299,9 @@ void *thread_http(void *para) {
 
     // http->http会在http_perform中被删除
     free(arg);
+    bs_delete(http->http);
     bs_delete(http);
     bs_delete(res);
-
     return NULL;
 }
 
@@ -325,8 +327,9 @@ void *thread_down(void *para) {
         down->file_callback->done(res->response_code, res->response_code, res->body);
     }
     // http->http会在http_perform中被删除
+    bs_delete(down->http);
     bs_delete(down);
-
+    bs_delete(res);
     return NULL;
 }
 
@@ -339,9 +342,9 @@ void *thread_up_file(void *para) {
         thread_http_response(res, NULL);
         up->file_callback->done(res->response_code, res->response_code, res->body);
     }
-    // http->http会在http_perform中被删除
+    bs_delete(up->http);
     bs_delete(up);
-
+    bs_delete(res);
     return NULL;
 }
 
@@ -355,21 +358,23 @@ void *thread_post_data(void *para) {
         thread_http_response(res, (HttpSession *) arg[1]);
         up->file_callback->done(res->response_code, res->response_code, res->body);
     }
-    // http->http会在http_perform中被删除
     free(arg);
+    bs_delete(up->http);
     bs_delete(up);
     bs_delete(res);
     return NULL;
 }
 
 void thread_http_response(http_res_t *res, HttpSession *session) {
-    if (res->response_code < 0) {
-        const char *error = "http connect error!";
+    if (res->response_code <= 0) {
+        const char *error = "网络连接失败，请稍后再试";
         if (res->response_code == BS_TIMEOUT) {
-            error = "http time-out";
+            error = "网络连接超时，请稍后再试";
         }
         
         res->body = (char *)error;
+        session->display_http_log(res->body);
+        return;
     } else {
         if (session != NULL) {
             res->cookie = bs_strrstr(res->response.mem, "\r\nSet-Cookie");
@@ -380,15 +385,5 @@ void thread_http_response(http_res_t *res, HttpSession *session) {
         }
     }
     
-#if DEBUG
-    if (session->http_show_log) {
-        if (res->response_code == HTTP_OK) {
-            JSONObject response(res->body);
-            info_log("%s", response.toString());
-        } else {
-            info_log("%s", res->response.mem);
-        }
-    }
-#else
-#endif
+    session->display_http_log(res->response.mem);
 }

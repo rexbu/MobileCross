@@ -13,6 +13,7 @@ extern "C"{
 #endif
 
 #define BS_MD5_STRLEN           32 
+    
 
 /*
 typedef struct{

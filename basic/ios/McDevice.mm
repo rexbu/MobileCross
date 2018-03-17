@@ -15,28 +15,52 @@
 #include <sys/sysctl.h>
 #include <net/if_dl.h>
 #include "McDevice.h"
+#include "SFHFKeychainUtils.h"
 #include <string.h>
 
 #define KEYCHAIN_SERVICE_NAME       @"visioninsdk.com.visionin.rex"
 #define KEYCHAIN_ACCOUNT_UUID       @"keychain_account_uuid.com.visionin.rex"
+// 该方式已经失效
+//const char* mc::device_id()
+//{
+//    NSString *UUID = [[NSUserDefaults standardUserDefaults] objectForKey:KEYCHAIN_SERVICE_NAME];
+//    if (!UUID || [UUID isEqualToString:@""]) {
+//
+//        NSString *domain     = KEYCHAIN_SERVICE_NAME;
+//        NSString *key        = KEYCHAIN_ACCOUNT_UUID;
+//        NSString *identifier = [SecureUDID UDIDForDomain:[domain stringByAppendingString:@"uuid"] usingKey:[key stringByAppendingString:@"uuid"]];
+//        //本地没有，创建UUID
+//        UUID = identifier;
+//        if (identifier && ![identifier isEqualToString:@""]) {
+//            [[NSUserDefaults standardUserDefaults] setObject:identifier forKey:KEYCHAIN_SERVICE_NAME];
+//        }
+//    }
+//
+//    NSString *format = [UUID stringByReplacingOccurrencesOfString:@"-" withString:@""];
+//    return [format UTF8String];
+//}
 
 const char* mc::device_id()
 {
-    NSString *UUID = [[NSUserDefaults standardUserDefaults] objectForKey:KEYCHAIN_SERVICE_NAME];
-    if (!UUID || [UUID isEqualToString:@""]) {
+    NSString *UUID = [SFHFKeychainUtils getPasswordForUsername:KEYCHAIN_ACCOUNT_UUID andServiceName:KEYCHAIN_SERVICE_NAME error:nil];
+    if (!UUID) {
+        CFUUIDRef puuid = CFUUIDCreate(nil);
+        CFStringRef uuidString = CFUUIDCreateString(nil, puuid);
+        NSString *result = (NSString *)CFBridgingRelease(CFStringCreateCopy(NULL, uuidString));
+        CFRelease(puuid);
+        CFRelease(uuidString);
         
-        NSString *domain     = KEYCHAIN_SERVICE_NAME;
-        NSString *key        = KEYCHAIN_ACCOUNT_UUID;
-        NSString *identifier = [SecureUDID UDIDForDomain:[domain stringByAppendingString:@"uuid"] usingKey:[key stringByAppendingString:@"uuid"]];
-        //本地没有，创建UUID
-        UUID = identifier;
-        if (identifier && ![identifier isEqualToString:@""]) {
-            [[NSUserDefaults standardUserDefaults] setObject:identifier forKey:KEYCHAIN_SERVICE_NAME];
+        NSError *error;
+        
+        UUID = [result stringByReplacingOccurrencesOfString:@"-" withString:@""];
+        BOOL saved = [SFHFKeychainUtils storeUsername:KEYCHAIN_ACCOUNT_UUID andPassword:UUID
+                                       forServiceName:KEYCHAIN_SERVICE_NAME updateExisting:YES error:&error];
+        if (!saved) {
+            info_log("Keychain保存UUID时出错");
         }
     }
-  
-    NSString *format = [UUID stringByReplacingOccurrencesOfString:@"-" withString:@""];
-    return [format UTF8String];
+    
+    return [UUID UTF8String];
 }
 
 const char* mc::system_version(){

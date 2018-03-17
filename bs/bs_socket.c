@@ -9,17 +9,47 @@
 #include "bs_type.h"
 #include "bs_dnscache.h"
 
-#define dns_cache_list "{\"n01.me-yun.com\": \"47.94.254.214\", \"wyh1111.oss-cn-hangzhou.aliyuncs.com\": \"120.27.176.249\"}"
 
-static int socket_create(int sock_type, int is_nonblock);
+int socket_udp(bool_t is_nonblock);
+int socket_tcp(bool_t is_nonblock);
+static int socket_create(int family, int sock_type, int is_nonblock);
 static int sockaddr_create(struct sockaddr_in* addr, in_addr_t s_addr, int port);
 
+state_t bs_tcp_sock_connect(int *sock, const char *ip, int port, bool_t is_nonblock) {
+    state_t status = BS_SUCCESS;
+    struct addrinfo hints, *res;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    hints.ai_protocol = 0;
+    char portStr[8];
+    snprintf(portStr, 8, "%d", port);
+    int retryTimes = 3;
+    while (retryTimes > 0) {
+        // 偶尔DNS会解析失败，现在给一个重试机制，默认为重试3次
+        retryTimes -= 1;
+        status = getaddrinfo(ip, portStr, &hints, &res);
+        if (status == 0) {
+            *sock = socket_create(res->ai_family, SOCK_STREAM, is_nonblock);
+            bs_sock_ignore_sigpipe(*sock);
+            status = connect(*sock, res->ai_addr, res->ai_addrlen);
+            break;
+        } else {
+            printf("ERROR: getaddrinfo error: %s\n", gai_strerror(status));
+        }
+    }
+    
+    freeaddrinfo(res);
+    return status;
+}
+
 int socket_udp(bool_t is_nonblock){
-    return socket_create(SOCK_DGRAM, is_nonblock);
+    return socket_create(AF_INET, SOCK_DGRAM, is_nonblock);
 }
 
 int socket_tcp(bool_t is_nonblock){
-    return socket_create(SOCK_STREAM, is_nonblock);
+    return socket_create(AF_INET, SOCK_STREAM, is_nonblock);
 }
 
 state_t bs_sock_keepalive(int sock){
@@ -59,6 +89,25 @@ state_t bs_sock_bind(int sock, int port){
     return BS_SUCCESS;
 }
 
+state_t bs_sock_connect(int sock, const char* ip, int port){
+    state_t             st;
+    struct sockaddr_in  addr;
+    
+    st = bs_sock_addr(&addr, ip, port);
+    if(st != BS_SUCCESS){
+        return st;
+    }
+    
+    st = connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
+    //    if(st==0){
+    //        return BS_SUCCESS;
+    //    }
+    //
+    //    return errno;
+    
+    return st;
+}
+
 state_t bs_sock_addr(struct sockaddr_in* addr, const char* ip, int port){
     struct hostent* host = NULL;
     struct in_addr *currentIp;
@@ -67,7 +116,7 @@ state_t bs_sock_addr(struct sockaddr_in* addr, const char* ip, int port){
         if ((host=gethostbyname(ip))==NULL){
             return BS_HOSTERR;
         }
-        
+
         currentIp = (struct in_addr *)host->h_addr;
         dns_cache_store(*currentIp, ip);
     }
@@ -78,25 +127,6 @@ state_t bs_sock_addr(struct sockaddr_in* addr, const char* ip, int port){
     addr->sin_addr = *currentIp;
 
     return BS_SUCCESS;
-}
-
-state_t bs_sock_connect(int sock, const char* ip, int port){
-    state_t             st;
-    struct sockaddr_in  addr;
-
-    st = bs_sock_addr(&addr, ip, port);
-    if(st != BS_SUCCESS){
-        return st;
-    }
-
-    st = connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
-//    if(st==0){
-//        return BS_SUCCESS;
-//    }
-//
-//    return errno;
-    
-    return st;
 }
 
 void bs_sock_ignore_sigpipe(int sock) {
@@ -221,10 +251,10 @@ static int sockaddr_create(struct sockaddr_in* addr, in_addr_t s_addr, int port)
     return BS_SUCCESS;
 }
 
-static int socket_create(int sock_type, int is_nonblock){
+static int socket_create(int family, int sock_type, int is_nonblock){
     int sock;
 
-    if((sock = socket(AF_INET, sock_type, 0)) == -1){
+    if((sock = socket(family, sock_type, 0)) == -1){
         return -1;
     }
 
@@ -237,8 +267,7 @@ static int socket_create(int sock_type, int is_nonblock){
     
     if(is_nonblock){
         socket_unblock(sock);
-    }
-    else{
+    } else{
         socket_block(sock);
     }
 

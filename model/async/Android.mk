@@ -11,13 +11,9 @@ LOCAL_C_INCLUDES += \
 LOCAL_SRC_FILES += 	\
 	AsyncFrame.cpp	\
 	AsyncSocket.cpp	\
-	AsyncQueue.cpp	\
 	SocketFrame.cpp
 
 #LOCAL_LDLIBS += -L$(SYSROOT)/usr/lib -llog
-LOCAL_STATIC_LIBRARIES := \
-	libbs				\
-	libbasic
 
 LOCAL_MODULE := async
 

@@ -3,7 +3,7 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_CPP_EXTENSION := .cpp .cc
-LIBZIP_SRC_FILES := $(wildcard $(LOCAL_PATH)/*.c)
+LIBZIP_SRC_FILES := $(wildcard $(LOCAL_PATH)/*.c $(LOCAL_PATH)/*.cpp)
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/
 LOCAL_SRC_FILES := $(LIBZIP_SRC_FILES:$(LOCAL_PATH)/%=%)
 LOCAL_MODULE := zip

@@ -8,6 +8,7 @@
 
 #include "JSON.h"
 #include "McZip.h"
+#include <float.h>
 
 using namespace mc;
 
@@ -326,8 +327,7 @@ double JSONObject::doubleValue(const char* name, double dv){
     cJSON* json = cJSON_GetObjectItem(m_root, name);
     if (json != NULL && json->type==cJSON_Number) {
         return json->valuedouble;
-    }
-    else{
+    } else {
         return dv;
     }
 }
@@ -336,13 +336,13 @@ bool_t JSONObject::boolValue(const char* name){
     cJSON* json = cJSON_GetObjectItem(m_root, name);
     if (json != NULL && json->type==cJSON_True) {
         return BS_TRUE;
+    } else if (json != NULL && json->type==cJSON_Number) {
+        if (json->valueint != 0) {
+            return BS_TRUE;
+        }
     }
-    else if(json != NULL && json->type==cJSON_True){
-        return BS_FALSE;
-    }
-    else{
-        return BS_NOTBOOL;
-    }
+  
+  return BS_FALSE;
 }
 
 const char* JSONObject::stringValue(const char* name){
@@ -400,17 +400,21 @@ map<string, string> JSONObject::stringdict() {
     cJSON* obj = m_root->child;
     while (obj!=NULL) {
         std::string s = obj->string;
-        if (obj->type == cJSON_False || obj->type == cJSON_True || obj->type == cJSON_Number) {
+        if (obj->type == cJSON_Number) {
             char temp[64];
-            if (obj->valueint == 0) {
-                sprintf(temp, "%f", obj->valuedouble);
-            } else {
+            if (fabs((obj->valueint) - obj->valuedouble) <= DBL_EPSILON) {
                 sprintf(temp, "%d", obj->valueint);
+            } else {
+                sprintf(temp, "%f", obj->valuedouble);
             }
             string s(temp);
             ks[obj->string] = s;
         } else if (obj->type == cJSON_String) {
             ks[obj->string] = obj->valuestring;
+        } else if (obj->type == cJSON_False) {
+            ks[obj->string] = "false";
+        } else if (obj->type == cJSON_True) {
+            ks[obj->string] = "true";
         }
         
         obj = obj->next;

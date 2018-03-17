@@ -14,7 +14,6 @@
 #include <map>
 #include <typeinfo>
 #include "bs.h"
-#include "cJSON.h"
 
 using namespace std;
 // 只支持Ojbect和Array类型拷贝

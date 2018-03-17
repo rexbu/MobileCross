@@ -9,12 +9,6 @@
 #include "bs_dnscache.h"
 #include <string.h>
 
-typedef struct bs_dns{
-    struct bs_dns *next;
-    struct in_addr in_addr_ip;
-    char *hostname;
-}bs_dns;
-
 typedef bs_dns *bs_dns_pr;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -36,7 +30,7 @@ void dns_root_create() {
     m_root->next = NULL;
 }
 
-struct in_addr* dns_cache_lookup(const char *hostname) {
+bs_dns* dns_cache_lookup(const char *hostname) {
     if (pthread_mutex_lock(&mutex) != 0){
         fprintf(stdout, "lock error!\n");
     }
@@ -49,7 +43,7 @@ struct in_addr* dns_cache_lookup(const char *hostname) {
     while (dns) {
         if (strcmp(dns->hostname, hostname) == 0) {
             pthread_mutex_unlock(&mutex);
-            return &dns->in_addr_ip;
+            return dns;
         }
         dns = dns->next;
     }
@@ -83,7 +77,8 @@ void dns_cache_store(struct in_addr in_addr_ip, const char *hostname) {
         // 存储dns信息时候需要加锁，处理线程安全
         bs_dns_pr node = (bs_dns_pr)malloc(sizeof(bs_dns));
         dns_pre->next = node;
-        node->in_addr_ip = in_addr_ip;
+        node->in_addr_ip = (struct in_addr *)malloc(sizeof(struct in_addr));
+        memcpy(node->in_addr_ip, &in_addr_ip, sizeof(struct in_addr));
         node->next = NULL;
         
         int len = (int)strlen(hostname) + 1;
@@ -92,9 +87,49 @@ void dns_cache_store(struct in_addr in_addr_ip, const char *hostname) {
             return;
         }
         memcpy(node->hostname, hostname, len);
-        printf("");
     }
   
+    // 解锁
+    pthread_mutex_unlock(&mutex);
+}
+
+void dns_cache_ipv6_store(struct in6_addr in_addr_ip, const char *hostname) {
+    if (pthread_mutex_lock(&mutex) != 0){
+        fprintf(stdout, "lock error!\n");
+    }
+    if (dns_cache_empty()) {
+        dns_root_create();
+    }
+    
+    int cacheCount = 0;
+    bs_dns_pr dns_pre = m_root;
+    bs_dns_pr dns_next = dns_pre->next;
+    while (dns_next) {
+        cacheCount++;
+        dns_pre = dns_next;
+        dns_next = dns_next->next;
+        if (strcmp(hostname, dns_pre->hostname) == 0) {
+            pthread_mutex_unlock(&mutex);
+            return;
+        }
+    }
+    
+    if (cacheCount < BS_HOST_CACHE_COUNT) {
+        // 存储dns信息时候需要加锁，处理线程安全
+        bs_dns_pr node = (bs_dns_pr)malloc(sizeof(bs_dns));
+        dns_pre->next = node;
+        node->in_addr_ip6 = (struct in6_addr *)malloc(sizeof(struct in6_addr));
+        memcpy(node->in_addr_ip6, &in_addr_ip, sizeof(struct in6_addr));
+        node->next = NULL;
+        
+        int len = (int)strlen(hostname) + 1;
+        if (!(node->hostname = (char*)malloc(sizeof(char) * len))) {
+            pthread_mutex_unlock(&mutex);
+            return;
+        }
+        memcpy(node->hostname, hostname, len);
+    }
+    
     // 解锁
     pthread_mutex_unlock(&mutex);
 }
@@ -114,6 +149,8 @@ void dns_cache_remove(const char *hostname) {
         if (strcmp(dns_next->hostname, hostname)) {
             dns_pre = dns_next->next;
             free(dns_next->hostname);
+            free(dns_next->in_addr_ip);
+            free(dns_next->in_addr_ip6);
             free(dns_next);
             pthread_mutex_unlock(&mutex);
             return;
@@ -140,6 +177,8 @@ void dns_cache_clear() {
         bs_dns_pr node = dns;
         dns = node->next;
         free(node->hostname);
+        free(node->in_addr_ip);
+        free(node->in_addr_ip6);
         free(node);
     }
     

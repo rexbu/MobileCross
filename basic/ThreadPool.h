@@ -41,7 +41,7 @@ public:
     static ThreadPool* shareInstance();
     static void destroyInstance();
     
-    ThreadPool(int thread_num = 2);
+    ThreadPool(int thread_num = 20);
     ~ThreadPool();
     
     void add(void*   (*run)(void*),void* arg);

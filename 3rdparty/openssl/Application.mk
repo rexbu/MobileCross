@@ -5,7 +5,6 @@
 
 # The location of the NDK ,please change your location NDK Path
 #
-NDK_ROOT := /opt/Android/sdk/ndk-bundle
 
 # Update these to the latest versions before building
 #

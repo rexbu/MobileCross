@@ -8,10 +8,10 @@ LOCAL_MODULE := libssl
 LOCAL_SRC_FILES := $(TARGET_ARCH_ABI)/libssl.a
 include $(PREBUILT_STATIC_LIBRARY)
 
-# libcrypto.a
+# libwebsockets.a
 #
 include $(CLEAR_VARS)
-LOCAL_MODULE := libcrypto
-LOCAL_SRC_FILES := $(TARGET_ARCH_ABI)/libcrypto.a
+LOCAL_MODULE := libwebsockets
+LOCAL_SRC_FILES := $(TARGET_ARCH_ABI)/libwebsockets.a
 include $(PREBUILT_STATIC_LIBRARY)
 

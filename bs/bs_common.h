@@ -66,10 +66,8 @@ uint32_t bs_memcpy(void* src, uint32_t src_size, const void* dst, uint32_t dst_s
 void bs_strswap(void* src, uint32_t src_size, char* dst, uint32_t dst_size);
 char* bs_strrstr(const char* src, const char* dst);
 int bs_log2(int x); // 快速计算以2位底数的对数
-    
-#ifndef COMPILE_MAC
+
 state_t convert(const char *fromset, const char *toset, char *from,uint32_t from_len, char *to,uint32_t to_len);
-#endif
 
 #ifdef __cplusplus
 }

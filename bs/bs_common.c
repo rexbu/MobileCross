@@ -86,9 +86,11 @@ int bs_log2(int x){
     return exp - 127;
 }
 
-#ifdef __LINUX__
-state_t convert(const char *fromset, const char *toset, char *from,uint32_t from_len, char *to,uint32_t to_len);
-{
+#ifdef __ANDROID__
+#include "iconv.h"
+
+state_t convert(const char *fromset, const char *toset, char *from,uint32_t from_len, char *to,uint32_t to_len){
+
     iconv_t cd;
     cd=iconv_open(toset,fromset);
     if(iconv(cd, &from, &from_len, &to, &to_len)==-1){
@@ -99,4 +101,6 @@ state_t convert(const char *fromset, const char *toset, char *from,uint32_t from
     iconv_close(cd);
     return BS_SUCCESS;
 }
+
 #endif
+

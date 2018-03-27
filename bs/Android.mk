@@ -4,6 +4,12 @@ include $(CLEAR_VARS)
 LOCAL_CFLAGS += -D__ANDROID__ -g
 #APP_PLATFORM := android-19
 
+LOCAL_C_INCLUDES =	\
+	$(LOCAL_PATH)/../3rdparty/libiconv  \
+	$(LOCAL_PATH)/../3rdparty/libiconv/include  \
+	$(LOCAL_PATH)/../3rdparty/libiconv/lib  \
+	$(LOCAL_PATH)/../3rdparty/libiconv/libcharset/include
+
 LOCAL_SRC_FILES += \
 	bs_log.c	\
 	bs_socket.c	\

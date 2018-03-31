@@ -12,9 +12,9 @@
 #include <event.h>
 #include "AsyncSocket.h"
 
-class EventAsyncSocket:virtual public AsyncSocket{
+class EventSocket:virtual public AsyncSocket{
 public:
-    EventAsyncSocket(int sock, int sock_type):AsyncSocket(sock, sock_type){}
+    EventSocket(int sock, int sock_type):AsyncSocket(sock, sock_type){}
     virtual ~EventAsyncSocket(){}
     
     struct event* getReadEvent() { return &m_read_event; }

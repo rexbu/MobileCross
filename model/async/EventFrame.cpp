@@ -36,21 +36,21 @@ void on_accept(int sock, short event, void* arg)
     
     int accept_fd = accept(sock, (struct sockaddr*)&addr, &sock_len);
     debug_log("accept sock[%d] addr[%s:%d]", accept_fd, bs_sock_getip(&addr), bs_sock_getport(&addr));
-    EventAsyncSocket* socket = frame->createSocket(accept_fd);
+    EventSocket* socket = frame->createSocket(accept_fd);
     frame->append(socket);
 }
 
 void on_read(int sock, short event, void* arg){
-    EventAsyncSocket*   socket = (EventAsyncSocket*)arg;
+    EventSocket*   socket = (EventSocket*)arg;
     socket->onRead();
 }
 
-void EventFrame::append(EventAsyncSocket* socket){
+void EventFrame::append(EventSocket* socket){
     event_set(socket->getReadEvent(), socket->getSocket(), EV_READ|EV_PERSIST, on_read, socket);
     event_base_set(m_base, socket->getReadEvent());
     event_add(socket->getReadEvent(), NULL);
 }
 
-void EventFrame::isExist(EventAsyncSocket *socket){
+void EventFrame::isExist(EventSocket *socket){
     event_del(socket->getReadEvent());
 }

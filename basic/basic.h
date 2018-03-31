@@ -9,17 +9,17 @@
 #ifndef __basic_h
 #define __basic_h
 
-#include "JSON.h"
-#include "McDevice.h"
-#include "McFile.h"
-#include "McHttp.h"
-#include "McZip.h"
-#include "Thread.h"
-#include "McReference.h"
-#include "SharedPreferences.h"
-#include "McTask.h"
-#include "ThreadPool.h"
-#include "McTimer.h"
+#include "json.h"
+#include "device.h"
+#include "file.h"
+#include "http.h"
+#include "zip.h"
+#include "thread.h"
+#include "reference.h"
+#include "shared_preferences.h"
+#include "task.h"
+#include "threadpool.h"
+#include "timer.h"
 
 // 内存管理好烦啊
 // 异步删除内存，用于回调中删除自己

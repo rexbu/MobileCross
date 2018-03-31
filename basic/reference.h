@@ -14,9 +14,9 @@
 #include <vector>
 
 namespace mc {
-    class Reference{
+    class reference{
     public:
-        Reference(){
+        reference(){
             m_referencecount = 0;
             m_is_reference = true;
         }
@@ -68,16 +68,16 @@ namespace mc {
         
         ~ReferenceCache();
         
-        virtual Reference* get();
+        virtual reference* get();
         
         // 必须是new出来的对象
-        inline void add(Reference* r){
+        inline void add(reference* r){
             m_cache.push_back(r);
         }
         
     protected:
         static ReferenceCache*  m_instance;
-        std::vector<Reference*>      m_cache;
+        std::vector<reference*>      m_cache;
     };
 }
 

@@ -6,9 +6,9 @@
 //  Copyright © 2017年 Rex. All rights reserved.
 //
 
-#include "McHmacAuth.h"
+#include "hmac_auth.h"
 #include <string.h>
-#include "HMAC_SHA1.h"
+#include "hmac_sha1.h"
 
 #define MAX_MESSAGE_LENGTH 4096
 

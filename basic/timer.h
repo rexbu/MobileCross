@@ -10,7 +10,7 @@
 #define	__MCTIMER_H_
 
 #include "bs.h"
-#include "Thread.h"
+#include "thread.h"
 
 namespace mc {
     typedef enum{
@@ -19,9 +19,9 @@ namespace mc {
         TIMER_RTC,
     }timer_type_t;
     
-    class Timer: public LoopThread{
+    class timer: public LoopThread{
     public:
-        Timer(long utime, void* (*callback)(void*), void* para = NULL, timer_type_t type = TIMER_SLEEP);
+        timer(long utime, void* (*callback)(void*), void* para = NULL, timer_type_t type = TIMER_SLEEP);
         
         virtual void loop();
         

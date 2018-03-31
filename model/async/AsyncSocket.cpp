@@ -7,7 +7,7 @@
  */
 
 #include "AsyncSocket.h"
-#include "ThreadPool.h"
+#include "threadpool.h"
 
 void* sock_msg_init(void* p){
     sock_msg_t* msg = (sock_msg_t*)p;

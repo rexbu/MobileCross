@@ -6,15 +6,15 @@
  * history:
  */
 
-#include "SharedPreferences.h"
-#include "McZip.h"
+#include "shared_preferences.h"
+#include "Zip.h"
 
 using namespace mc;
 
 static char g_root_path[1024];
-const char* SharedPreferences::m_root_path = NULL;
+const char* shared_preferences::m_root_path = NULL;
 
-SharedPreferences::SharedPreferences(const char* name){
+shared_preferences::shared_preferences(const char* name){
     if (name != NULL) {
         path(name, m_path, sizeof(m_path));
         if(open(m_path)){
@@ -26,7 +26,7 @@ SharedPreferences::SharedPreferences(const char* name){
     }
 }
 
-bool SharedPreferences::commit(){
+bool shared_preferences::commit(){
     const char* b = toString();
     Crypt crypt;
     int64_t size = crypt.encryptByCompress((byte*)b, (uint32_t)strlen(b));
@@ -34,7 +34,7 @@ bool SharedPreferences::commit(){
     return true;
 }
 
-const char* SharedPreferences::path(const char* name, char* path, uint32_t size){
+const char* shared_preferences::path(const char* name, char* path, uint32_t size){
     if (m_root_path == NULL) {
         snprintf(g_root_path, sizeof(g_root_path), "%s/__shared_prefs", FileManager::rootPath());
         // 如果不存在则创建文件夹

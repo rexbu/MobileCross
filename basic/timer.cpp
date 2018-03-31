@@ -6,18 +6,18 @@
  * history:
  */
 
-#include "McTimer.h"
+#include "timer.h"
 
 using namespace mc;
 
-Timer::Timer(long utime, void* (*callback)(void*), void* para, timer_type_t type){
+timer::timer(long utime, void* (*callback)(void*), void* para, timer_type_t type){
     m_utime = utime;
     m_callback = callback;
     m_timer_type = type;
     m_para = para;
 }
 
-void Timer::loop(){
+void timer::loop(){
     switch (m_timer_type) {
         case TIMER_SLEEP:
             usleep(m_utime);

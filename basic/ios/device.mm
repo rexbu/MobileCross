@@ -10,11 +10,11 @@
 #import <Foundation/Foundation.h>
 #include <sys/utsname.h>
 #import <CommonCrypto/CommonDigest.h>
-#include "McDevice.h"
+#include "device.h"
 #import "SecureUDID.h"
 #include <sys/sysctl.h>
 #include <net/if_dl.h>
-#include "McDevice.h"
+#include "device.h"
 #include "SFHFKeychainUtils.h"
 #include <string.h>
 

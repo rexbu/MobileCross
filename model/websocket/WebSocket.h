@@ -8,7 +8,7 @@
 #include <string>
 #include "bs.h"
 #include "libwebsockets.h"
-#include "Thread.h"
+#include "thread.h"
 
 using namespace std;
 class WebSocket: public LoopThread{

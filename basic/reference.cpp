@@ -6,7 +6,7 @@
  * history:
  */
 
-#include "McReference.h"
+#include "reference.h"
 
 using namespace mc;
 
@@ -33,7 +33,7 @@ ReferenceCache::~ReferenceCache(){
     m_cache.clear();
 }
 
-Reference* ReferenceCache::get(){
+reference* ReferenceCache::get(){
     for (int i=0; i<m_cache.size(); i++) {
         if (m_cache[i]->idle()) {
             return m_cache[i];

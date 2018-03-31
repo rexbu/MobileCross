@@ -1,4 +1,4 @@
-#include "Thread.h"
+#include "thread.h"
 #ifdef __ANDROID__
 #include <jni.h>
 #endif

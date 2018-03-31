@@ -9,8 +9,8 @@
 #include <iostream>
 #include <string>
 #include "bs.h"
-#include "../McDevice.h"
-#include "../McFile.h"
+#include "device.h"
+#include "file.h"
 
 using namespace std;
 

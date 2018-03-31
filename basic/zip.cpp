@@ -8,9 +8,9 @@
 
 #include <string.h>
 #include "bs.h"
-#include "McZip.h"
+#include "Zip.h"
 #include "zlib.h"
-#include "McFile.h"
+#include "file.h"
 
 using namespace mc;
 

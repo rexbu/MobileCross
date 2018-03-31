@@ -2,10 +2,12 @@
 // Created by Rex on 2018/3/17.
 //
 
+#include <basic.h>
 #include "WebSocket.h"
 
 static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in,
                     size_t len);
+static void* on_message(void* msg);
 
 static struct lws_protocols protocols[] = {
     {"chat", callback, sizeof(void*), 0},
@@ -111,7 +113,7 @@ void WebSocket::pingpong(){
 }
 
 void WebSocket::loop(){
-    lws_service(m_context, 20);
+    lws_service(m_context, 20000);
     // 如果已经断开则重新连接
     if (!alive()){
         err_log("not alive, reconnect %s:%d%s", m_host.c_str(), m_port, m_path.c_str());
@@ -128,9 +130,13 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
     WebSocket* ws = WebSocket::m_instance;
 
     switch (reason){
-        case LWS_CALLBACK_CLIENT_RECEIVE:
-            ws->message((const char*)in, len);
+        case LWS_CALLBACK_CLIENT_RECEIVE: {
+            // 消息异步处理，防止阻塞
+            char* msg = (char*)calloc(1, len+1);
+            memcpy(msg, in ,len);
+            async_run(on_message, msg);
             break;
+        }
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
             ws->opened();
             break;
@@ -149,4 +155,12 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
     }
 
     return 0;
+}
+
+void* on_message(void* msg){
+    WebSocket* ws = WebSocket::m_instance;
+    uint32_t size = strlen((char*)msg);
+    ws->message((const char*)msg, size);
+    free(msg);
+    return NULL;
 }

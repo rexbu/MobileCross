@@ -12,7 +12,7 @@
 #include "bs.h"
 #include "AsyncSocket.h"
 #include "SocketFrame.h"
-#include "ThreadPool.h"
+#include "threadpool.h"
 
 class TCPSocket: public AsyncSocket{
 public:

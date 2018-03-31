@@ -7,14 +7,14 @@
  */
 
 #include "bs.h"
-#include "McDevice.h"
-#include "McHttp.h"
-#include "McFile.h"
-#include "McTask.h"
-#include "ThreadPool.h"
-#include "SharedPreferences.h"
-#include "McFile.h"
-#include "McZip.h"
+#include "device.h"
+#include "http.h"
+#include "file.h"
+#include "task.h"
+#include "threadpool.h"
+#include "shared_preferences.h"
+#include "file.h"
+#include "Zip.h"
 #include <iterator>
 #include "JSON.h"
 
@@ -98,7 +98,7 @@ bool HttpSession::http_show_log = false;
 
 HttpSession::HttpSession(void *threadpool) {
     if (threadpool == NULL) {
-        m_thread_pool = ThreadPool::shareInstance();
+        m_thread_pool = threadpool::shareInstance();
     } else {
         m_thread_pool = threadpool;
     }
@@ -148,7 +148,7 @@ void HttpSession::http(const char *url, const char *method, const char *body, ui
     void **para = (void **) malloc(sizeof(void *) * 2);
     para[0] = h;
     para[1] = this;
-    ((ThreadPool *) m_thread_pool)->add(thread_http, para);
+    ((threadpool *) m_thread_pool)->add(thread_http, para);
 }
 
 void HttpSession::download(const char *url, const char *path, HttpFileCallback *callback) {
@@ -261,7 +261,7 @@ void HttpSession::saveCookie(const char *cookie) {
     int64_t crysize = crypt.encryptByCompress((byte *) str, (uint32_t) strlen(str));
 
     char path[1024];
-    SharedPreferences::path("__CurrentCookie", path, sizeof(path));
+    shared_preferences::path("__CurrentCookie", path, sizeof(path));
     FileManager::write(path, crypt.bytes(), (size_t) crysize);
 }
 
@@ -271,7 +271,7 @@ void HttpSession::setCookie(const char *cookie) {
 
 void HttpSession::clearCookie() {
     char path[1024];
-    SharedPreferences::path("__CurrentCookie", path, sizeof(path));
+    shared_preferences::path("__CurrentCookie", path, sizeof(path));
     FileManager::remove(path);
     map<string, string>::iterator cookie = m_headers.find("Cookie");
     m_headers.erase(cookie);

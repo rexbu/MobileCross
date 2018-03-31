@@ -12,8 +12,8 @@
 #include "bs_url.h"
 #include "AsyncSocket.h"
 #include "SocketFrame.h"
-#include "ThreadPool.h"
-#include "McHttp.h"
+#include "threadpool.h"
+#include "http.h"
 
 using namespace mc;
 namespace model {

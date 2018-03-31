@@ -10,7 +10,7 @@
 #define __ASYNCFRAME_H_
 
 #include "bs.h"
-#include "Thread.h"
+#include "thread.h"
 
 class AsyncFrame: public LoopThread{
 public:

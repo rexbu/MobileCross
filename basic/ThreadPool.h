@@ -13,7 +13,7 @@
 #include <queue>
 #include <vector>
 #include "bs.h"
-#include "Thread.h"
+#include "thread.h"
 
 using namespace std;
 typedef struct thread_task_t{
@@ -36,19 +36,19 @@ public:
     pthread_cond_t              m_queue_ready;
 };
 
-class ThreadPool{
+class threadpool{
 public:
-    static ThreadPool* shareInstance();
+    static threadpool* shareInstance();
     static void destroyInstance();
     
-    ThreadPool(int thread_num = 20);
-    ~ThreadPool();
+    threadpool(int thread_num = 2);
+    ~threadpool();
     
     void add(void*   (*run)(void*),void* arg);
     void destroy();
     
 protected:
-    static ThreadPool*          m_instance;
+    static threadpool*          m_instance;
     
     std::vector<ThreadWork*>    m_threads;
     std::queue<thread_task_t>   m_queue;

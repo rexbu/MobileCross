@@ -7,7 +7,7 @@
 #ifndef __HMAC_SHA1_H__
 #define __HMAC_SHA1_H__
 
-#include "SHA1.h"
+#include "sha1.h"
 
 typedef unsigned char BYTE ;
 

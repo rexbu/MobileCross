@@ -7,7 +7,7 @@
  */
 
 #include "JSON.h"
-#include "McZip.h"
+#include "Zip.h"
 #include <float.h>
 
 using namespace mc;

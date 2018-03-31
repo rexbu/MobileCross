@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #include <stdio.h>
 #include <string.h>
-#include "McFile.h"
+#include "file.h"
 using namespace mc;
 
 //const char* FileManager::m_root_path = [[NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0] UTF8String];

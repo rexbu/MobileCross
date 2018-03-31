@@ -10,7 +10,7 @@
 #define	__ASYNCSOCKET_H_
 
 #include "bs.h"
-#include "Thread.h"
+#include "thread.h"
 #ifdef __ANDROID__
 #include <jni.h>
 #endif

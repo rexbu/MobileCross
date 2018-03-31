@@ -4,6 +4,7 @@
  * created :	2013-11-18 15:03
  * func : 
  */
+#include <strings.h>
 #include "bs_socket.h"
 #include "bs_common.h"
 #include "bs_type.h"
@@ -263,6 +264,9 @@ static int socket_create(int family, int sock_type, int is_nonblock){
         int flag = 0;
         setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &flag, sizeof(int));     //使用KEEPALIVE
         setsockopt (sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));    // 立刻发送
+        // 设置端口复用
+        int opt = SO_REUSEADDR;
+        setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     }
     
     if(is_nonblock){

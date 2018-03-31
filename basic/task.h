@@ -12,7 +12,7 @@
 #include <iostream>
 #include <vector>
 #include <pthread.h>
- #include "Thread.h"
+ #include "thread.h"
 
 using namespace std;
 typedef void* (* mc_async_task_f)(void* para);

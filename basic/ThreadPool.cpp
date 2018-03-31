@@ -6,7 +6,7 @@
  * history:
  */
 
-#include "ThreadPool.h"
+#include "threadpool.h"
 
 #pragma --mark "工作者线程"
 ThreadWork::ThreadWork(pthread_mutex_t* lock, pthread_cond_t* ready, std::queue<thread_task_t>* queue){
@@ -53,24 +53,24 @@ void ThreadWork::loop(){
 }
 
 #pragma --mark "线程池"
-ThreadPool* ThreadPool::m_instance = NULL;
+threadpool* threadpool::m_instance = NULL;
 
-ThreadPool* ThreadPool::shareInstance(){
+threadpool* threadpool::shareInstance(){
     if (m_instance==NULL) {
-        m_instance = new ThreadPool();
+        m_instance = new threadpool();
     }
     
     return m_instance;
 }
 
-void ThreadPool::destroyInstance(){
+void threadpool::destroyInstance(){
     if (m_instance!=NULL) {
         delete m_instance;
         m_instance = NULL;
     }
 }
 
-ThreadPool::ThreadPool(int thread_num){
+threadpool::threadpool(int thread_num){
     m_threads.resize(thread_num);
     pthread_mutex_init(&m_lock, NULL);
     pthread_cond_init(&m_ready, NULL);
@@ -81,11 +81,11 @@ ThreadPool::ThreadPool(int thread_num){
     }
 }
 
-ThreadPool::~ThreadPool(){
+threadpool::~threadpool(){
     destroy();
 }
 
-void ThreadPool::add(void*   (*run)(void*),void* arg){
+void threadpool::add(void*   (*run)(void*),void* arg){
     pthread_mutex_lock(&m_lock);
     thread_task_t task = {run , arg};
     m_queue.push(task);
@@ -93,7 +93,7 @@ void ThreadPool::add(void*   (*run)(void*),void* arg){
     pthread_mutex_unlock(&m_lock);
 }
 
-void ThreadPool::destroy(){
+void threadpool::destroy(){
     if (m_threads.size()==0) {
         return;
     }
@@ -121,5 +121,5 @@ void ThreadPool::destroy(){
 }
 
 void async_run(void*   (*run)(void*), void* arg){
-    ThreadPool::shareInstance()->add(run, arg);
+    threadpool::shareInstance()->add(run, arg);
 }

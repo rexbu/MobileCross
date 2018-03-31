@@ -9,14 +9,14 @@
 #ifndef	__SHAREDPREFERENCES_H_
 #define	__SHAREDPREFERENCES_H_
 
-#include "McFile.h"
+#include "file.h"
 #include "JSON.h"
 
 namespace mc {
     /// 轻量级存储
-    class SharedPreferences: public JSONObject, public File {
+    class shared_preferences: public JSONObject, public File {
     public:
-        SharedPreferences(const char* name);
+        shared_preferences(const char* name);
         
         bool commit();
         

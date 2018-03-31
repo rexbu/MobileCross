@@ -8,8 +8,8 @@
 
 #include <iostream>
 #include <string>
-#include "McFile.h"
-#include "McDevice.h"
+#include "file.h"
+#include "device.h"
 
 using namespace mc;
 

@@ -11,6 +11,13 @@
 #include "thread.h"
 
 using namespace std;
+
+typedef enum {
+    WS_STATUS_CONNECTING,
+    WS_STATUS_CONNECTED,
+    WS_STATUS_UNCONNECTED
+}ws_status_t;
+
 class WebSocket: public LoopThread{
 public:
     WebSocket(const char* ca = NULL, const char* cert = NULL, const char* cert_key = NULL);
@@ -28,6 +35,9 @@ public:
     int send(const char* msg, uint32_t size=0);
     bool alive();
     void pingpong();
+    inline void setStatus(ws_status_t s){
+        m_status = s;
+    }
 
     void create(const char* ca, const char* cert, const char* cert_key);
 
@@ -38,6 +48,7 @@ protected:
     struct lws_context_creation_info    m_create_info;
     struct lws_client_connect_info      m_conn_info;
 
+    ws_status_t    m_status;
     string  m_host;
     int     m_port;
     string  m_path;

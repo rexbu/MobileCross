@@ -34,6 +34,7 @@ WebSocket::WebSocket(const char* ca, const char* cert, const char* cert_key){
         m_use_ssl = 0;
     }
 
+    m_status = WS_STATUS_UNCONNECTED;
     create(ca, cert, cert_key);
 }
 
@@ -80,6 +81,7 @@ bool WebSocket::connect(const char* host, int port, const char* path){
         return false;
     }
 
+    m_status = WS_STATUS_CONNECTING;
     info_log("jni_connectLws start");
     return true;
 }
@@ -89,6 +91,7 @@ WebSocket::~WebSocket(){
 }
 
 bool WebSocket::exit(){
+    stop();
     lws_cancel_service(m_context);
     lws_context_destroy(m_context);
     return true;
@@ -115,7 +118,7 @@ void WebSocket::pingpong(){
 void WebSocket::loop(){
     lws_service(m_context, 20000);
     // 如果已经断开则重新连接
-    if (!alive()){
+    if (!alive() && m_status==WS_STATUS_UNCONNECTED){
         err_log("not alive, reconnect %s:%d%s", m_host.c_str(), m_port, m_path.c_str());
         connect();
     }
@@ -138,12 +141,14 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
             break;
         }
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
+            ws->setStatus(WS_STATUS_CONNECTED);
             ws->opened();
             break;
         case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
             ws->error();
             break;
         case LWS_CALLBACK_CLOSED:
+            ws->setStatus(WS_STATUS_UNCONNECTED);
             ws->cloesed();
             break;
         case LWS_CALLBACK_CLIENT_WRITEABLE:

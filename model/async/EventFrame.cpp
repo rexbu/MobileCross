@@ -17,7 +17,7 @@ EventFrame* EventFrame::m_instance = NULL;
 state_t EventFrame::open(int port){
     m_sock = socket_tcp(BS_TRUE);
     assert(bs_sock_bind(m_sock, port) == BS_SUCCESS);
-    assert(listen(m_sock, async::SOCKET_LISTEN_QUEUE_SIZE) == 0);
+    assert(listen(m_sock, SOMAXCONN) == 0);
     debug_log("sock[%d] listen port[%d]", m_sock, port);
     
     m_base = event_base_new();
@@ -37,20 +37,35 @@ void on_accept(int sock, short event, void* arg)
     int accept_fd = accept(sock, (struct sockaddr*)&addr, &sock_len);
     debug_log("accept sock[%d] addr[%s:%d]", accept_fd, bs_sock_getip(&addr), bs_sock_getport(&addr));
     EventSocket* socket = frame->createSocket(accept_fd);
-    frame->append(socket);
+    if (socket != NULL) {
+        frame->append(socket);
+    }
 }
 
 void on_read(int sock, short event, void* arg){
-    EventSocket*   socket = (EventSocket*)arg;
-    socket->onRead();
+    EventFrame* frame = (EventFrame*)arg;
+    EventSocket*   socket = frame->eventSocket(sock);
+    // 读取内容失败表示socket已经被关闭
+    if(socket->onRead()<0){
+        event_del(socket->getReadEvent());
+        close(sock);
+        frame->deleteSocket(socket);
+    }
 }
 
 void EventFrame::append(EventSocket* socket){
-    event_set(socket->getReadEvent(), socket->getSocket(), EV_READ|EV_PERSIST, on_read, socket);
+    event_set(socket->getReadEvent(), socket->getSocket(), EV_READ|EV_PERSIST, on_read, this);
     event_base_set(m_base, socket->getReadEvent());
     event_add(socket->getReadEvent(), NULL);
+    
+    m_event_map[socket->getSocket()] = socket;
 }
 
-void EventFrame::isExist(EventSocket *socket){
-    event_del(socket->getReadEvent());
+EventSocket* EventFrame::eventSocket(int sock){
+    map<int, EventSocket*>::iterator iter = m_event_map.find(sock);
+    if (iter == m_event_map.end()) {
+        return NULL;
+    }
+    
+    return iter->second;
 }

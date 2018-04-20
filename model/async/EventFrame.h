@@ -10,10 +10,14 @@
 #define __EVENTFRAME_H_
 
 #include "bs.h"
-#include "basic.h"
+#include <event.h>
+#include <iostream>
+#include <map>
 #include "EventSocket.h"
+#include "basic.h"
 
-class EventFrame{
+using namespace std;
+class EventFrame:public LoopThread{
 public:
     static EventFrame* instance(){
         return m_instance;
@@ -42,15 +46,15 @@ public:
         return m_base;
     }
     
-    void start(){
+    void loop(){
         event_base_dispatch(m_base);
     }
     
-    void append(EventAsyncSocket* socket);
+    void append(EventSocket* socket);
+    EventSocket* eventSocket(int sock);
     // 创建新的EventAsyncSocket，子类中实现以创建不同协议的socket
-    virtual EventAsyncSocket* createSocket(int sock) = 0;
-    virtual void deleteSocket(EventAsyncSocket* socket) = 0;
-    void isExist(EventAsyncSocket* socket);
+    virtual EventSocket* createSocket(int sock) = 0;
+    virtual void deleteSocket(EventSocket* socket) = 0;
     
 protected:
     static EventFrame*                  m_instance;
@@ -64,5 +68,7 @@ protected:
     int                 m_port;
     struct event_base*  m_base;
     struct event        m_listen_event;
+    
+    map<int, EventSocket*>  m_event_map;
 };
 #endif

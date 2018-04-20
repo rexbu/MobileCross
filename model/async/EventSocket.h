@@ -9,13 +9,14 @@
 #ifndef	__EVENTASYNCSOCKET_H_
 #define	__EVENTASYNCSOCKET_H_
 
+#include "bs.h"
 #include <event.h>
 #include "AsyncSocket.h"
 
-class EventSocket:virtual public AsyncSocket{
+class EventSocket:public AsyncSocket{
 public:
     EventSocket(int sock, int sock_type):AsyncSocket(sock, sock_type){}
-    virtual ~EventAsyncSocket(){}
+    virtual ~EventSocket(){}
     
     struct event* getReadEvent() { return &m_read_event; }
     struct event* getWriteEvent() { return &m_write_event; }

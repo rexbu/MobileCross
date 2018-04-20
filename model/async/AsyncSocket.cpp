@@ -7,7 +7,7 @@
  */
 
 #include "AsyncSocket.h"
-#include "threadpool.h"
+// #include "threadpool.h"
 
 void* sock_msg_init(void* p){
     sock_msg_t* msg = (sock_msg_t*)p;
@@ -42,19 +42,21 @@ AsyncSocket::AsyncSocket(){
     m_type = SOCK_STREAM;
 }
 
-void AsyncSocket::onRead(){
+int AsyncSocket::onRead(){
     sock_msg_t* msg = bs_new(sock_msg);
-    if (msg!=NULL){
+    if (msg != NULL){
         msg->size = (int)read(m_sock, msg->temp, sizeof(msg->temp));
         debug_log("socket[%d] recv [%d]", m_sock, msg->size);
         if (msg->size <= 0) {
             err_log("socket[%d] recv[%d] error", m_sock, msg->size);
             onError(errno);
-            return;
+            return -1;
         }
         msg->buf = msg->temp;
         msg->sock = m_sock;
         msg->arg = this;
-        async_run(sock_on_message, msg);
+        return msg->size;
+        // async_run(sock_on_message, msg);
     }
+    return 0;
 }

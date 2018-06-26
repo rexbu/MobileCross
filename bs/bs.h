@@ -18,6 +18,7 @@
 #include "bs_common.h"
 #include "bs_sign.h"
 #include "bs_socket.h"
+#include "bs_socks5.h"
 #include "bs_pack.h"
 #include "bs_list.h"
 #include "bs_pool.h"

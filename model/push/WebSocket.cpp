@@ -14,13 +14,11 @@
 
 static void print_protocal(ws_protocal_t* protocal);
 
-WEBSocket::WEBSocket(WebSocketListener* listener, int sock):
-AsyncSocket(sock, SOCK_STREAM),
-m_listener(listener){
+WebSocket::WebSocket(WebSocketListener* listener, int sock):
+AsyncSocket(sock, SOCK_STREAM){
     cqueue_init(&m_read_session);
     // mtu必须大于126，方便分包
     assert(m_mtu>126 && m_mtu<0xffff);
-    bs_conf_init(&m_handshake);
     m_write_buffer = new char[m_mtu];
     assert(m_write_buffer);
     m_status = STATUS_CLOSE;
@@ -32,7 +30,7 @@ m_listener(listener){
     }
 }
 
-state_t WEBSocket::open(const char* url_str,const char* sessionID){
+state_t WebSocket::open(const char* url_str,const char* sessionID){
     state_t     st;
     url_t       url;
     char        domain[URL_SIZE] = {0};
@@ -53,8 +51,8 @@ state_t WEBSocket::open(const char* url_str,const char* sessionID){
     
     socket_unblock(m_sock);
     //把sessionID添加进去  客户端在此发送，服务端接收，修改协议，添加sessionID，然后在服务端解析
-    snprintf(hand, SOCKET_TCP_MTU, "GET %s HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: upgrade\r\nsessionId: %s\r\nSec-WebSocket-Key: key\r\nSec-WebSocket-Protocol: push\r\nSec-WebSocket-Version: 17\r\n",
-             url.path, url.host,sessionID);
+    snprintf(hand, SOCKET_TCP_MTU, "GET %s HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: upgrade\r\nSec-WebSocket-Key: key\r\nSec-WebSocket-Protocol: live\r\nSec-WebSocket-Version: 17\r\n",
+             url.path, url.host);
     debug_log("shake message[%lu]: %s", strlen(hand), hand);
 
     send(m_sock, hand, strlen(hand), 0);
@@ -63,26 +61,7 @@ state_t WEBSocket::open(const char* url_str,const char* sessionID){
     return BS_SUCCESS;
 }
 
-void WEBSocket::onRead(){
-    async::message_t        msg;
-    
-    msg.buf = (char*)pool_malloc(&m_read_pool);
-    if (msg.buf!=NULL){
-        msg.size = (int)read(m_sock, msg.buf, m_mtu);
-        debug_log("socket[%d] recv [%d]", m_sock, msg.size);
-        if ((int)msg.size <= 0) {
-            err_log("socket[%d] recv[%d] status[%d] error", m_sock, msg.size, m_status);
-            pool_free(&m_read_pool, msg.buf);
-            onError(errno);
-            return;
-        }
-        msg.sock = m_sock;
-        //sendMessage(this, &msg);
-        onMessage(&msg);
-    }
-}
-
-void WEBSocket::onError(int error){
+void WebSocket::onError(int error){
     // 如果是close socket引起的error忽略
     if (m_status == STATUS_CLOSE) {
         return;
@@ -90,11 +69,10 @@ void WEBSocket::onError(int error){
     err_log("socket[%d] error[%d]", m_sock, error);
     m_status = STATUS_ERROR;
     m_error = error;
-    m_listener->onError(this);
     close(m_sock);
 }
 
-void WEBSocket::onMessage(async::message_t* msg){
+void WebSocket::onMessage(async::message_t* msg){
     char*       buf = msg->buf;
     uint32_t    size = msg->size;
     
@@ -102,32 +80,21 @@ void WEBSocket::onMessage(async::message_t* msg){
     //服务端，来自客户端的握手需要校验sessionID合法性，接收了修改之后的协议
     if (memcmp(buf, "GET", 3) == 0) {
         debug_log("handshake [%s]", buf);
-        parseRequest((const char*)buf, size);
-        //获取sessionID并进行校验
-        const char* sessionId = bs_conf_getstr(&m_handshake, "sessionId");
-        if (sessionId==NULL) {
-            //TODO 出错处理需要继续优化
-            onError(BS_PARANULL);
-            return;
+        if(parseRequest((const char*)buf, size) == BS_SUCCESS){
+            opened();
         }
-        
-        debug_log("sessionId[%s]", sessionId);
-        m_status = STATUS_CONNECTED;
-        //pushserver
-        m_listener->onOpen(this, sessionId);
-        setSessionId(sessionId);
-        //sessionId = NULL;
-        
-        pool_free(&m_read_pool, buf);
+        else{
+            responseHandshake(400);
+        }
+        bs_delete(msg);
     }
     //客户端，来自服务端的握手
     else if (memcmp(buf, "HTTP/1.1", strlen("HTTP/1.1")) == 0){
-        state_t res = parseResponse((const char*)buf, size);
+        ws_response_code_t res = parseResponse((const char*)buf, size);
     
-        if (res == BS_INVALID || bs_conf_getint(&m_handshake, "ResponseCode")!=101) {
-            debug_log("login in fail");
-            printf("The sessionID doesenot exist");
-            m_listener->onClose(this);
+        if (res != WS_RESPONSE_OK) {
+            debug_log("login in fail: %d", res);
+            cloesed();
         }
         else
         {
@@ -135,11 +102,10 @@ void WEBSocket::onMessage(async::message_t* msg){
             m_status = STATUS_CONNECTED;
             //登陆成功，开始发送心跳ping
             push(OPCODE_PING, NULL, 0);
-            pool_free(&m_read_pool, buf);
+            bs_delete(msg);
         }
     }
     else{
-        
         struct timeval tv;
         struct timezone tz;
         
@@ -252,7 +218,7 @@ void WEBSocket::onMessage(async::message_t* msg){
     buf = NULL;
 }
 
-uint64_t WEBSocket::protocalSize(){
+uint64_t WebSocket::protocalSize(){
     uint64_t    size = 0;
     
     for (uint32_t pos = m_read_session.head; pos != m_read_session.rear; pos=cqueue_next(&m_read_session, pos)) {
@@ -271,7 +237,7 @@ uint64_t WEBSocket::protocalSize(){
     return size;
 }
 
-uint64_t WEBSocket::protocalBuffer(char* buffer, uint64_t size){
+uint64_t WebSocket::protocalBuffer(char* buffer, uint64_t size){
     ws_protocal_t       protocal;
     uint64_t            total_size = 0;
     
@@ -295,19 +261,19 @@ uint64_t WEBSocket::protocalBuffer(char* buffer, uint64_t size){
     return total_size;
 }
 
-state_t WEBSocket::parseRequest(const char* buf, uint32_t size){
+status_t WebSocket::parseRequest(const char* buf, uint32_t size){
     char    key[64] = {0};
     char    value[256] = {0};
     char*   ptr = (char*)buf;
 
     if (memcmp(ptr, "GET", 3) == 0 && strstr(ptr, "HTTP/1.1")!=NULL) {
-        bs_conf_setstr(&m_handshake, "method", "GET");
+        m_headers['method'] = 'GET';
         sscanf(ptr, "GET %s HTTP/1.1", value);
-        bs_conf_setstr(&m_handshake, "path", value);
-        bs_conf_setstr(&m_handshake, "http", "1.1");
+        m_headers['path'] = value;
+        m_headers['http'] = "1.1";
     }
     else{
-        return BS_PARAERR;
+        return WS_RESPONSE_INVALID;
     }
     
     ptr = strstr(ptr, "\r\n");
@@ -316,41 +282,39 @@ state_t WEBSocket::parseRequest(const char* buf, uint32_t size){
         key[strlen(key)-1] = '\0';
         //value[strlen(value)-1] = '\0';
         //debug_log("key[%s] value[%s]", key, value);
-        bs_conf_setstr(&m_handshake, key, value);
+        m_headers[string(key)] = string(value);
         ptr = strstr(ptr+2, "\r\n");
     }
     
     return BS_SUCCESS;
 }
 
-state_t WEBSocket::parseResponse(const char* buf, uint32_t size){
+ws_response_code_t WebSocket::parseResponse(const char* buf, uint32_t size){
     char    key[64];
     char    value[256];
     int     response_code;
     char*   ptr = (char*)buf;
         
     if (memcmp(ptr, "HTTP/1.1",strlen("HTTP/1.1")) == 0){
-        
         sscanf(ptr, "HTTP/1.1 %d Switching Protocols\r\n", &response_code);
-        bs_conf_setint(&m_handshake, "ResponseCode", response_code);
-        debug_log("ResponseCode: %d", bs_conf_getint(&m_handshake, "ResponseCode"));
+        debug_log("ResponseCode: %d", response_code);
     }
     else{
-        return BS_PARAERR;
+        return WS_RESPONSE_INVALID;
     }
     
     ptr = strstr(ptr, "\r\n");
     while (ptr != NULL && ptr-buf<size-2) {
         sscanf(ptr, "\r\n%s %s\r\n", key, value);
         key[strlen(key)-1] = '\0';
-        bs_conf_setstr(&m_handshake, key, value);
+        m_headers[string(key)] = string(value);
         ptr = strstr(ptr+2, "\r\n");
     }
     
-    return BS_SUCCESS;
+    return response_code;
 }
 
-state_t WEBSocket::responseHandshake(){
+state_t WebSocket::responseHandshake(int code){
     char        buf[1024];
     
     snprintf(buf, 1024, "HTTP/1.1 %d Switching Protocols\r\n\
@@ -360,19 +324,19 @@ state_t WEBSocket::responseHandshake(){
              Date: \r\n\
              Access-Control-Allow-Credentials: true\r\n\
              Access-Control-Allow-Headers: content-type\r\n\
-             Sec-WebSocket-Accept: \r\n", 101, "websocket.xinmuu.com");
+             Sec-WebSocket-Accept: \r\n", code, "push.me-yun.com");
     return send(m_sock, buf, strlen(buf), 0)>0 ? BS_SUCCESS:BS_INVALID;
 }
 
-state_t WEBSocket::sendBinary(const void* buf, uint32_t size){
-    return push(OPCODE_BINARY, (const char*)buf, size)>0 ? BS_SUCCESS:BS_SENDERR;
+state_t WebSocket::sendBinary(const void* buf, uint32_t size){
+    return send(OPCODE_BINARY, (const char*)buf, size)>0 ? BS_SUCCESS:BS_SENDERR;
 }
 
-state_t WEBSocket::sendText(const void* buf, uint32_t size){
-    return push(OPCODE_TEXT, (const char*)buf, size)>0 ? BS_SUCCESS:BS_SENDERR;
+state_t WebSocket::sendText(const void* buf, uint32_t size){
+    return send(OPCODE_TEXT, (const char*)buf, size)>0 ? BS_SUCCESS:BS_SENDERR;
 }
 
-int WEBSocket::push(int opcode, const char* buf, uint32_t size){
+int WebSocket::send(int opcode, const char* buf, uint32_t size){
     uint32_t            buffer_size;
     
     // m_mtu>126 && m_mtu<0xffff
@@ -402,7 +366,7 @@ int WEBSocket::push(int opcode, const char* buf, uint32_t size){
     return size;
 }
 
-uint32_t WEBSocket::frame(uint8_t fin, uint8_t opcode, uint32_t mask_key, const char* buf, uint32_t size){
+uint32_t WebSocket::frame(uint8_t fin, uint8_t opcode, uint32_t mask_key, const char* buf, uint32_t size){
     ws_protocal_t       protocal;
     
     if (size > m_mtu-8){
@@ -417,13 +381,20 @@ uint32_t WEBSocket::frame(uint8_t fin, uint8_t opcode, uint32_t mask_key, const 
     // m_mtu>126 && m_mtu<0xffff, size不会大于uint32_t最大值，所以payload_len不会为127
     // 暂时无Extension data， payload_len就是Application data长度
     if (size<126) {
-        //TODO 如果size+6，可能超过126，所以暂时改为size，文档貌似是全部长度，待证
         protocal.payload_len = size;
         // 小于126，头长度为
         memcpy(m_write_buffer, &protocal, 2);
         memcpy(m_write_buffer+2, &protocal.masking_key, 4);
         memcpy(m_write_buffer+6, buf, size);
         return size+6;
+    }
+    else if(size<65535){
+        protocal.payload_len = 126;
+        protocal.payload_len_16 = size;
+        memcpy(m_write_buffer, &protocal, 4);
+        memcpy(m_write_buffer+4, &protocal.masking_key, 4);
+        memcpy(m_write_buffer+8, buf, size);
+        return size+8;
     }
     else{
         protocal.payload_len = 126;
@@ -437,19 +408,19 @@ uint32_t WEBSocket::frame(uint8_t fin, uint8_t opcode, uint32_t mask_key, const 
     return 0;
 }
 
-state_t WEBSocket::parseFrame(ws_protocal_t* protocal, const char* buf, uint32_t size){
+state_t WebSocket::parseFrame(ws_protocal_t* protocal, const char* buf, uint32_t size){
     // 暂时无Extension data， payload_len就是Application data长度
     memcpy(protocal, buf, sizeof(ws_protocal_t));
     if (protocal->payload_len<126) {
         protocal->masking_key = *(uint32_t*)(buf+2);
         protocal->payload = buf+6;
         protocal->buffer = buf;
-        //TODO 如果size+6，可能超过126，所以这里payload_len代表body长度，文档貌似是全部长度，待证
         if (size != protocal->payload_len+6) {
             return BS_PARAERR;
         }
     }
     else if(protocal->payload_len == 126){
+        protocal->payload_len_16 = *(uint16_t*)(buf+2);
         protocal->masking_key = *(uint32_t*)(buf+4);
         protocal->payload = buf+8;
         protocal->buffer = buf;

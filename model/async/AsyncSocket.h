@@ -10,7 +10,7 @@
 #define	__ASYNCSOCKET_H_
 
 #include "bs.h"
-#include "thread.h"
+// #include "thread.h"
 #ifdef __ANDROID__
 #include <jni.h>
 #endif
@@ -42,7 +42,8 @@ public:
         return m_sock;
     }
     
-    virtual void onRead();
+    // 0:申请内存失败，-1:socket 读取错误， >0: 读取内容长度
+    virtual int onRead();
     virtual void onWrite() = 0;
     virtual void onError(int error) = 0;
     virtual void onMessage(sock_msg_t* msg) = 0;

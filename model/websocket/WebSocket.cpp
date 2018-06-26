@@ -118,9 +118,14 @@ void WebSocket::pingpong(){
 void WebSocket::loop(){
     lws_service(m_context, 20000);
     // 如果已经断开则重新连接
-    if (!alive() && m_status==WS_STATUS_UNCONNECTED){
-        err_log("not alive, reconnect %s:%d%s", m_host.c_str(), m_port, m_path.c_str());
-        connect();
+    if (!alive()){
+        if (m_status==WS_STATUS_UNCONNECTED){
+            err_log("not alive, reconnect...");
+            connect();
+        }
+        else{
+            err_log("not alive, connecting...");
+        }
     }
 }
 
@@ -145,6 +150,7 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
             ws->opened();
             break;
         case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+            ws->setStatus(WS_STATUS_UNCONNECTED);
             ws->error();
             break;
         case LWS_CALLBACK_CLOSED:
@@ -155,7 +161,7 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
             break;
 
         default:
-            info_log("no parser command:%d ", reason);
+            //info_log("no parser command:%d ", reason);
             break;
     }
 

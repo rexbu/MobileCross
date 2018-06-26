@@ -344,9 +344,14 @@ void http_send_request(int socket, http_res_t* http_res, http_t* http) {
 
 void http_receive_response(int socket, http_res_t *http_res, http_t *http) {
     int len = 0;
-    int bufferSize = 1024;
     int receveLength = 0;
-    char buf[bufferSize];
+    char buf[1024] = {0};
+
+    while((len=read(socket, buf, sizeof(buf)))>0){
+        data_append(&http_res->response, buf, len);
+    }
+    http_response_parse(http_res);
+    /*
     http_receive_header(socket, http_res, http);
     http_res_header res_header = parse_header(http_res->response.mem);
     if (res_header.content_length > 0) {
@@ -368,6 +373,7 @@ void http_receive_response(int socket, http_res_t *http_res, http_t *http) {
     } else {
         http_response_parse(http_res);
     }
+     */
 }
 
 void http_receive_header(int socket, http_res_t *http_res, http_t* http) {
@@ -406,7 +412,7 @@ state_t http_response_parse(http_res_t* res){
     
     http_res_header res_header = parse_header(res->response.mem);
     sscanf(res->response.mem, "HTTP/1.1 %d", &res->response_code);
-    res->body = bs_strrstr(res->response.mem, "\r\n") + 2;
+    res->body = strstr(res->response.mem, "\r\n\r\n") + 4;
     res->body_size = res->response.len - (uint32_t)(res->body-res->response.mem);
     
     if (res_header.status_code == HTTP_NOTFOUND) {
